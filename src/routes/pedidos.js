@@ -144,7 +144,7 @@ router.patch('/:id/recibir', (req, res) => {
   pedido.lineas.map(linea => {
     const productoEncontrado = productos.find(p => p.id === linea.productoId);
     if(productoEncontrado){
-      productoEncontrado.stock += linea.cajas;
+      productoEncontrado.stock += (linea.cajas * productoEncontrado.unidadesPorCaja);
     };
 
     return linea;
@@ -153,10 +153,5 @@ router.patch('/:id/recibir', (req, res) => {
   res.json({mensaje: "Pedido recibido con éxito y stock actualizado",pedido});
 
 });
-
-router.patch('/:id/recibir', (req, res) => {
-  
-});
-
 
 module.exports = router; 
