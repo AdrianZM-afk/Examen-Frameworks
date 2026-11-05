@@ -1,0 +1,83 @@
+### ==========================================
+### 1. PRODUCTOS
+### ==========================================
+
+### Obtener todos los productos
+GET http://localhost:3000/api/productos
+
+
+### ==========================================
+### 2. PEDIDOS (GET & FILTROS)
+### ==========================================
+
+### Listar todos los pedidos
+GET http://localhost:3000/api/pedidos
+
+### Filtrar pedidos pendientes (true)
+GET http://localhost:3000/api/pedidos?pendiente=true
+
+### Filtrar pedidos no pendientes (false)
+GET http://localhost:3000/api/pedidos?pendiente=false
+
+### Obtener detalle de un pedido existente (ej: ID 1)
+GET http://localhost:3000/api/pedidos/1
+
+### ERROR 400: El ID no es un número entero
+GET http://localhost:3000/api/pedidos/abc
+
+### ERROR 404: Pedido no encontrado
+GET http://localhost:3000/api/pedidos/9999
+
+
+### ==========================================
+### 3. PEDIDOS (POST - CREAR & AUTOMÁTICO)
+### ==========================================
+
+### Crear un pedido manual correctamente
+POST http://localhost:3000/api/pedidos
+Content-Type: application/json
+
+{
+  "lineas": [
+    { "productoId": 1, "cajas": 3 },
+    { "productoId": 3, "cajas": 2 }
+  ]
+}
+
+### ERROR 400: El pedido viene sin líneas o vacío
+POST http://localhost:3000/api/pedidos
+Content-Type: application/json
+
+{
+  "lineas": []
+}
+
+### ERROR 400: Producto que no existe o cantidad de cajas inválida
+POST http://localhost:3000/api/pedidos
+Content-Type: application/json
+
+{
+  "lineas": [
+    { "productoId": 999, "cajas": 4 }
+  ]
+}
+
+### Generar pedido automático por stock bajo
+POST http://localhost:3000/api/pedidos/automatico
+
+
+### ==========================================
+### 4. PEDIDOS (PATCH - RECIBIR)
+### ==========================================
+
+### Marcar un pedido como recibido y sumar stock (ej: ID 1)
+PATCH http://localhost:3000/api/pedidos/1/recibir
+
+### ERROR 409: El pedido ya había sido recibido anteriormente
+PATCH http://localhost:3000/api/pedidos/1/recibir
+
+### ERROR 400: ID no válido en recibir
+PATCH http://localhost:3000/api/pedidos/texto/recibir
+
+### ERROR 404: Pedido a recibir no encontrado
+PATCH http://localhost:3000/api/pedidos/8888/recibir
