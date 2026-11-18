@@ -154,9 +154,6 @@ router.patch('/:id/recibir', (req, res) => {
 
 });
 
-router.patch('/:id/recibir', (req, res) => {
-  
-});
 
 
 module.exports = router; 
