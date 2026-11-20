@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-
 const eventos = require('../data/eventos.data');
 const productos = require('../data/productos.data');
 
@@ -9,13 +8,13 @@ const {
   PERSONAS_POR_CAMARERO,
   MINIMO_CAMAREROS,
   COSTE_CAMARERO,
-  TIPO
-} = require('../configs');
+  TIPOS
+} = require('../config');
 
-const validarEventos = (evento) => {
+const calcularDatosEventos = (evento) => {
   if(evento.cancelado.estado){
     return {
-      ...eventos,
+      ...evento,
       camareros: 0,
       costePersonal: 0,
       costeArtistas: 0,
@@ -26,15 +25,15 @@ const validarEventos = (evento) => {
 
   const camarerosBase = Math.ceil(evento.gentePrevista / PERSONAS_POR_CAMARERO);
   const camarerosMinimos = Math.max(MINIMO_CAMAREROS, camarerosBase);
-  const extraFiesta = evento.tipo === "fiesta" ? 1: 0;
+  const extraFiesta = evento.tipo === "fiesta" ? 1 : 0;
   const camareros = camarerosMinimos + extraFiesta;
 
   const costePersonal = camareros * COSTE_CAMARERO;
 
   const costeArtistas = evento.artistas.reduce((total, artista) => total + artista.precio, 0);
 
-  const recaudacionEntradas = eventos.entrada.gratis ? 0 : (eventos.entrada.precio * evento.gentePrevista);
-  const ingresosAlquiler = evento.alquiler.seCobra ? evento.alquier.importe : 0;
+  const recaudacionEntradas = evento.entrada.gratis ? 0 : (evento.entrada.precio * evento.gentePrevista);
+  const ingresosAlquiler = evento.alquiler.seCobra ? evento.alquiler.importe : 0;
   const ingresos = recaudacionEntradas + ingresosAlquiler;
 
   const balance = ingresos - (costePersonal + costeArtistas);
@@ -57,7 +56,6 @@ router.get('/', (req, res) =>{
     pagina = 1, limite = 10 
   } = req.query;
 
-
   let resultado = eventos.map(e => calcularDatosEventos(e));
 
   if(tipo) {
@@ -66,7 +64,7 @@ router.get('/', (req, res) =>{
 
   if(gratis !== undefined){
     const esGratis = gratis === "true";
-    resultado = resultado.filter(e => e.entrada.gratis === "esGratis");
+    resultado = resultado.filter(e => e.entrada.gratis === esGratis);
   }
 
   if(precioMin !== undefined){
@@ -74,7 +72,7 @@ router.get('/', (req, res) =>{
   }
 
   if(precioMax !== undefined){
-    resultado = resultado.filter(e => e.entrada.precio >= Number(precioMax));
+    resultado = resultado.filter(e => e.entrada.precio <= Number(precioMax)); 
   }
 
   if(texto){
@@ -85,7 +83,7 @@ router.get('/', (req, res) =>{
   }
 
   if(etiqueta){
-    resultado = resultado.filter(e => e.etiqueta.includes(etiqueta));
+    resultado = resultado.filter(e => e.etiquetas.includes(etiqueta)); 
   }
 
   if(desde){
@@ -98,12 +96,12 @@ router.get('/', (req, res) =>{
 
   if(organizador){
     const orgMinus = organizador.toLowerCase();
-    resultado = resultado.filter(e => e.organizador.Nombre.toLowerCase().includes(orgMinus))
+    resultado = resultado.filter(e => e.organizador.Nombre.toLowerCase().includes(orgMinus));
   }
 
   if(artista){
     const artMinus = artista.toLowerCase();
-    resultado = resultado.filter(e => e.artista.some(a => a.Nombre.toLowerCase().includes(artMinus)))
+    resultado = resultado.filter(e => e.artistas.some(a => a.nombre.toLowerCase().includes(artMinus))); 
   }
   
   if(cancelado !== undefined){
@@ -112,7 +110,7 @@ router.get('/', (req, res) =>{
   }
 
   if(alquilerPendiente === "true"){
-    resultado = resultado.filter(e => e.alquiler.seCobra && !e.alquiler.pagado)
+    resultado = resultado.filter(e => e.alquiler.seCobra && !e.alquiler.pagado);
   }
 
   if (minCamareros) {
@@ -168,7 +166,7 @@ router.get('/:id', (req, res) => {
     return res.status(404).json({ error: 'Evento no encontrado' });
   }
 
-  res.json(calcularDatosEvento(eventoEncontrado));
+  res.json(calcularDatosEventos(eventoEncontrado));
 });
 
 module.exports = router;
