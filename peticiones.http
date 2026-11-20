@@ -94,7 +94,7 @@ GET http://localhost:3000/api/eventos/preguntas
 GET http://localhost:3000/api/productos/valor
 
 ### Necesidades de stock para un evento concreto
-GET http://localhost:3000/api/eventos/1/necesidades
+GET http://localhost:3000/api/eventos/1
 
 ### Previsión de compras para todos los eventos pendientes
 GET http://localhost:3000/api/productos/prevision
