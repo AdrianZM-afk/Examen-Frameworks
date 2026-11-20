@@ -1,7 +1,17 @@
-## Cómo Usar el Programa
+# API de Gestión - "Sala El Recreo"
 
-1. **Pruebas con REST Client:** 
-   - En la raíz del proyecto encontrarás el archivo `peticiones.http`.
-   - Abre el archivo en Visual Studio Code con la extensión *REST Client* instalada para probar todos los endpoints de Productos, Pedidos y Eventos, incluyendo los casos de éxito y los códigos de error (**400, 404, 409**).
-2. **Consultas y Filtros:** 
-   - Puedes usar los parámetros en la URL (como `?pendiente=true`, `?tipo=concierto`, `?orden=balance&dir=desc`, o `pagina=1&limite=5`) directamente desde cualquier cliente HTTP.
+API REST desarrollada con **Node.js y Express** para la gestión integral de la programación de eventos, control de almacén y reposición mediante pedidos a proveedores. Todo el código cumple con el paradigma funcional utilizando métodos puros de arrays (`map`, `filter`, `reduce`, `some`, `every`, `flatMap`), sin emplear bucles tradicionales ni mutar los datos originales.
+
+---
+
+## Cómo Arrancar y Usar el Proyecto
+
+### 1. Instalación y Arranque
+Abre una terminal en la raíz del proyecto y ejecuta los siguientes comandos:
+
+```bash
+# Instalar las dependencias del proyecto (Express)
+npm install
+
+# Arrancar el servidor en el puerto 3000
+npm start

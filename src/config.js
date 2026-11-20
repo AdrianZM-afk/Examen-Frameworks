@@ -1,4 +1,4 @@
-const nombre_sala = 'Sala Creativa';  
+const nombre_sala = 'Sala El Recreo';  
 const aforo = 150;
 const personas_por_camarero = 35;
 const minimo_camareros = 2;
