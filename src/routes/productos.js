@@ -1,110 +1,74 @@
 const express = require('express');
 const router = express.Router();
+const {
+  obtenerProductosService,
+  obtenerProductoPorIdService,
+  crearProductoService,
+  actualizarProductoService,
+  eliminarProductoService,
+  obtenerValorAlmacenService
+} = require('../services/productos.service');
 
-const productos = require('../data/productos.data.js');
-
-router.get('/', (req, res) => {
-  res.json(productos);
+// RUTA FIJA /valor (Debe ir siempre antes de /:id)
+router.get('/valor', (req, res) => {
+  res.json(obtenerValorAlmacenService());
 });
 
+// GET /api/productos (Admite ?categoria=bebida y ?bajoMinimo=true)
+router.get('/', (req, res) => {
+  const { categoria, bajoMinimo } = req.query;
+  res.json(obtenerProductosService(categoria, bajoMinimo));
+});
 
+// GET /api/productos/:id
 router.get('/:id', (req, res) => {
+  const idNum = Number(req.params.id);
+  if (isNaN(idNum)) return res.status(400).json({ error: "El ID debe ser un número entero" });
 
-  const idBuscado = Number(req.params.id);
-
-  const producto = productos.find(p => p.id === idBuscado);
-
-  if (!producto){
-    return res.status(404).json({mensaje: "Producto no encontrado"});
-  }
+  const producto = obtenerProductoPorIdService(idNum);
+  if (!producto) return res.status(404).json({ error: "Producto no encontrado" });
 
   res.json(producto);
 });
 
-router.post('/', (req,res) => {
-  const {nombre, precio, stock} = req.body;
+// POST /api/productos
+router.post('/', (req, res) => {
+  const resultado = crearProductoService(req.body);
+  if (resultado.error) return res.status(resultado.status).json({ error: resultado.error });
 
-  if (!nombre) {
-    return res.status(400).json({ 
-      mensaje: "El campo 'nombre' es obligatorio"
-    });
-  };
-
-  if (precio === undefined ) {
-    return res.status(400).json({ 
-      mensaje: "El campo 'precio' es obligatorio" 
-    });
-  };
-
-  if (stock === undefined) {
-    return res.status(400).json({ 
-      mensaje: "El campo 'stock' es obligatorio" 
-    });
-  };
-
-  const existe = productos.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
-
-  if (existe) {
-    return res.status(400).json({ 
-      mensaje: "El producto ya existe en el catálogo" 
-    });
-  };
-
-  const nuevoProducto = {
-    id: productos.length + 1,
-    nombre: nombre,
-    precio: precio,
-    stock: stock
-  };
-
-  productos.push(nuevoProducto);
-
-  res.status(201).json({
-    mensaje: "Producto creado con exito",
-    producto: nuevoProducto
-  });
+  res.status(201).json({ mensaje: "Producto creado con éxito", producto: resultado.producto });
 });
 
-router.put('/:id' , (req,res) => {
-  const idBuscado = Number(req.params.id);
+// PUT / PATCH /api/productos/:id
+router.patch('/:id', (req, res) => {
+  const idNum = Number(req.params.id);
+  if (isNaN(idNum)) return res.status(400).json({ error: "El ID debe ser un número entero" });
 
-  const {nombre, precio, stock} = req.body;
+  const resultado = actualizarProductoService(idNum, req.body);
+  if (resultado.error) return res.status(resultado.status).json({ error: resultado.error });
 
-  const posicion = productos.findIndex(p => p.id === idBuscado);
-
-  if (posicion === -1) {
-    return res.status(404).json({mensaje: "Producto no encontrado"});
-  };
-
-  productos[posicion] = {
-    nombre: nombre !== undefined ? nombre : productos[posicion].nombre,
-    precio: precio !== undefined ? precio : productos[posicion].precio,
-    stock: stock !== undefined ? stock : productos[posicion].stock
-  };
-
-  res.json({
-    mensaje: "Producto actualizado con exito",
-    productos: productos[posicion]
-  });
+  res.json({ mensaje: "Producto actualizado con éxito", producto: resultado.producto });
 });
 
-router.delete('/:id' , (req,res) => {
-  const idBuscado = Number(req.params.id);
+router.put('/:id', (req, res) => {
+  const idNum = Number(req.params.id);
+  if (isNaN(idNum)) return res.status(400).json({ error: "El ID debe ser un número entero" });
 
-  const posicion = productos.findIndex(p => p.id === idBuscado);
+  const resultado = actualizarProductoService(idNum, req.body);
+  if (resultado.error) return res.status(resultado.status).json({ error: resultado.error });
 
-  if (posicion === -1) {
-    return res.status(404).json({ 
-      mensaje: "Producto no encontrado para eliminar" 
-    });
-  };
+  res.json({ mensaje: "Producto actualizado con éxito", producto: resultado.producto });
+});
 
-  const eliminar = productos.splice(posicion, 1);
+// DELETE /api/productos/:id (Devuelve 204 sin cuerpo o 404/409)
+router.delete('/:id', (req, res) => {
+  const idNum = Number(req.params.id);
+  if (isNaN(idNum)) return res.status(400).json({ error: "El ID debe ser un número entero" });
 
-  res.json({
-    mensaje: "Producto eliminado correctamente",
-    producto: eliminar[0]
-  });
+  const resultado = eliminarProductoService(idNum);
+  if (resultado.error) return res.status(resultado.status).json({ error: resultado.error });
+
+  res.status(204).send();
 });
 
 module.exports = router;
