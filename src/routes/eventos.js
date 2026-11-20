@@ -10,7 +10,7 @@ const {
   obtenerPreguntasService,
   cancelarEventoService,
   pagarAlquilerService
-} = require('../services/eventos.service');
+} = require('../servicios/eventos.servicios');
 
 // RUTAS FIJAS DE INFORMES (¡Siempre antes de /:id!)
 router.get('/resumen', (req, res) => res.json(obtenerResumenService()));

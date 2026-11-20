@@ -7,7 +7,7 @@ const {
   crearPedidoManualService,
   crearPedidoAutomaticoService,
   recibirPedidoService
-} = require('../services/pedidos.service');
+} = require('../servicios/pedidos.servicios');
 
 // GET /api/pedidos
 router.get('/', (req, res) => {

@@ -7,7 +7,7 @@ const {
   actualizarProductoService,
   eliminarProductoService,
   obtenerValorAlmacenService
-} = require('../services/productos.service');
+} = require('../servicios/productos.servicios');
 
 // RUTA FIJA /valor (Debe ir siempre antes de /:id)
 router.get('/valor', (req, res) => {
