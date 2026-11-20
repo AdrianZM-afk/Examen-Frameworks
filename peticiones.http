@@ -1,83 +1,100 @@
 ### ==========================================
-### 1. PRODUCTOS
+### 5. EVENTOS (GET & FILTROS)
 ### ==========================================
 
-### Obtener todos los productos
-GET http://localhost:3000/api/productos
+### Listar todos los eventos con datos calculados
+GET http://localhost:3000/api/eventos
 
+### Filtrar eventos por tipo (monologo)
+GET http://localhost:3000/api/eventos?tipo=monologo
 
-### ==========================================
-### 2. PEDIDOS (GET & FILTROS)
-### ==========================================
+### Filtrar eventos gratuitos
+GET http://localhost:3000/api/eventos?gratis=true
 
-### Listar todos los pedidos
-GET http://localhost:3000/api/pedidos
+### Filtrar por texto en título o descripción
+GET http://localhost:3000/api/eventos?texto=comedia
 
-### Filtrar pedidos pendientes (true)
-GET http://localhost:3000/api/pedidos?pendiente=true
+### Combinación de filtros (tipo + gratis)
+GET http://localhost:3000/api/eventos?tipo=monologo&gratis=false
 
-### Filtrar pedidos no pendientes (false)
-GET http://localhost:3000/api/pedidos?pendiente=false
+### Obtener detalle de un evento (ej: ID 1)
+GET http://localhost:3000/api/eventos/1
 
-### Obtener detalle de un pedido existente (ej: ID 1)
-GET http://localhost:3000/api/pedidos/1
+### ERROR 400: ID de evento no válido
+GET http://localhost:3000/api/eventos/abc
 
-### ERROR 400: El ID no es un número entero
-GET http://localhost:3000/api/pedidos/abc
-
-### ERROR 404: Pedido no encontrado
-GET http://localhost:3000/api/pedidos/9999
+### ERROR 404: Evento no encontrado
+GET http://localhost:3000/api/eventos/9999
 
 
 ### ==========================================
-### 3. PEDIDOS (POST - CREAR & AUTOMÁTICO)
+### 6. EVENTOS (POST, PUT, PATCH, DELETE)
 ### ==========================================
 
-### Crear un pedido manual correctamente
-POST http://localhost:3000/api/pedidos
+### Crear un evento nuevo correctamente
+POST http://localhost:3000/api/eventos
 Content-Type: application/json
 
 {
-  "lineas": [
-    { "productoId": 1, "cajas": 3 },
-    { "productoId": 3, "cajas": 2 }
-  ]
+  "titulo": "Noche de Magia",
+  "descripcion": "Espectáculo de magia en directo",
+  "tipo": "monologo",
+  "dia": "2026-11-25",
+  "hora": "21:00",
+  "entrada": { "gratis": false, "precio": 12 },
+  "gentePrevista": 80,
+  "organizador": { "Nombre": "Carlos", "contacto": "600112233" },
+  "alquiler": { "seCobra": true, "importe": 150, "pagado": false },
+  "cancelado": { "estado": false, "motivo": null },
+  "artistas": [{ "nombre": "Mago Lucas", "precio": 400, "duracionMin": 75 }],
+  "etiquetas": ["magia"],
+  "celebrado": false
 }
 
-### ERROR 400: El pedido viene sin líneas o vacío
-POST http://localhost:3000/api/pedidos
+### PATCH: Cancelar un evento indicando motivo
+PATCH http://localhost:3000/api/eventos/1/cancelar
 Content-Type: application/json
 
 {
-  "lineas": []
+  "motivo": "Enfermedad del artista principal"
 }
 
-### ERROR 400: Producto que no existe o cantidad de cajas inválida
-POST http://localhost:3000/api/pedidos
+### ERROR 400: Cancelar sin indicar motivo
+PATCH http://localhost:3000/api/eventos/2/cancelar
 Content-Type: application/json
 
 {
-  "lineas": [
-    { "productoId": 999, "cajas": 4 }
-  ]
+  "motivo": ""
 }
 
-### Generar pedido automático por stock bajo
-POST http://localhost:3000/api/pedidos/automatico
+### PATCH: Pagar el alquiler de un evento
+PATCH http://localhost:3000/api/eventos/1/pagar-alquiler
 
 
 ### ==========================================
-### 4. PEDIDOS (PATCH - RECIBIR)
+### 7. INFORMES Y ALMACÉN
 ### ==========================================
 
-### Marcar un pedido como recibido y sumar stock (ej: ID 1)
-PATCH http://localhost:3000/api/pedidos/1/recibir
+### Resumen general de eventos
+GET http://localhost:3000/api/eventos/resumen
 
-### ERROR 409: El pedido ya había sido recibido anteriormente
-PATCH http://localhost:3000/api/pedidos/1/recibir
+### Alquileres pendientes por organizador
+GET http://localhost:3000/api/eventos/deudas
 
-### ERROR 400: ID no válido en recibir
-PATCH http://localhost:3000/api/pedidos/texto/recibir
+### Lista plana de todas las actuaciones ordenadas por caché
+GET http://localhost:3000/api/eventos/actuaciones
 
-### ERROR 404: Pedido a recibir no encontrado
-PATCH http://localhost:3000/api/pedidos/8888/recibir
+### Calendario de un mes concreto
+GET http://localhost:3000/api/eventos/calendario?mes=2026-11
+
+### Preguntas rápidas de sí o no
+GET http://localhost:3000/api/eventos/preguntas
+
+### Valor total del almacén y por categoría
+GET http://localhost:3000/api/productos/valor
+
+### Necesidades de stock para un evento concreto
+GET http://localhost:3000/api/eventos/1/necesidades
+
+### Previsión de compras para todos los eventos pendientes
+GET http://localhost:3000/api/productos/prevision

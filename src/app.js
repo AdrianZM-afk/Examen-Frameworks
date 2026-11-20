@@ -3,9 +3,9 @@ const app = express();
 const PORT = 3000;
 
 
-const eventosRouter = require("./src/routes/eventos");
-const pedidosRouter = require("./src/routes/pedidos");
-const productosRouter = require("./src/routes/productos");
+const eventosRouter = require("./routes/eventos");
+const pedidosRouter = require("./routes/pedidos");
+const productosRouter = require("./routes/productos");
 
 app.use(express.json());
 
