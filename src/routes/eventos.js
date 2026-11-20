@@ -1,172 +1,64 @@
 const express = require('express');
 const router = express.Router();
-const eventos = require('../data/eventos.data');
-const productos = require('../data/productos.data');
-
 const {
-  AFORO,
-  PERSONAS_POR_CAMARERO,
-  MINIMO_CAMAREROS,
-  COSTE_CAMARERO,
-  TIPOS
-} = require('../config');
+  obtenerEventosService,
+  obtenerEventoPorIdService,
+  obtenerResumenService,
+  obtenerDeudasService,
+  obtenerActuacionesService,
+  obtenerCalendarioService,
+  obtenerPreguntasService,
+  cancelarEventoService,
+  pagarAlquilerService
+} = require('../services/eventos.service');
 
-const calcularDatosEventos = (evento) => {
-  if(evento.cancelado.estado){
-    return {
-      ...evento,
-      camareros: 0,
-      costePersonal: 0,
-      costeArtistas: 0,
-      ingresos: 0,
-      balance: 0
-    };
-  }
+// RUTAS FIJAS DE INFORMES (¡Siempre antes de /:id!)
+router.get('/resumen', (req, res) => res.json(obtenerResumenService()));
+router.get('/deudas', (req, res) => res.json(obtenerDeudasService()));
+router.get('/actuaciones', (req, res) => res.json(obtenerActuacionesService()));
+router.get('/calendario', (req, res) => {
+  const { mes } = req.query;
+  if (!mes) return res.status(400).json({ error: "El parámetro 'mes' (AAAA-MM) es obligatorio" });
+  res.json(obtenerCalendarioService(mes));
+});
+router.get('/preguntas', (req, res) => res.json(obtenerPreguntasService()));
 
-  const camarerosBase = Math.ceil(evento.gentePrevista / PERSONAS_POR_CAMARERO);
-  const camarerosMinimos = Math.max(MINIMO_CAMAREROS, camarerosBase);
-  const extraFiesta = evento.tipo === "fiesta" ? 1 : 0;
-  const camareros = camarerosMinimos + extraFiesta;
-
-  const costePersonal = camareros * COSTE_CAMARERO;
-
-  const costeArtistas = evento.artistas.reduce((total, artista) => total + artista.precio, 0);
-
-  const recaudacionEntradas = evento.entrada.gratis ? 0 : (evento.entrada.precio * evento.gentePrevista);
-  const ingresosAlquiler = evento.alquiler.seCobra ? evento.alquiler.importe : 0;
-  const ingresos = recaudacionEntradas + ingresosAlquiler;
-
-  const balance = ingresos - (costePersonal + costeArtistas);
-
-  return {
-    ...evento,
-    camareros,
-    costePersonal,
-    costeArtistas,
-    ingresos,
-    balance
-  };
-};
-
-router.get('/', (req, res) =>{
-  const { 
-    tipo, precioMin, precioMax, gratis, texto, etiqueta, 
-    desde, hasta, organizador, artista, cancelado, 
-    alquilerPendiente, minCamareros, orden, dir, campos, 
-    pagina = 1, limite = 10 
-  } = req.query;
-
-  let resultado = eventos.map(e => calcularDatosEventos(e));
-
-  if(tipo) {
-    resultado = resultado.filter(e => e.tipo === tipo);
-  }
-
-  if(gratis !== undefined){
-    const esGratis = gratis === "true";
-    resultado = resultado.filter(e => e.entrada.gratis === esGratis);
-  }
-
-  if(precioMin !== undefined){
-    resultado = resultado.filter(e => e.entrada.precio >= Number(precioMin));
-  }
-
-  if(precioMax !== undefined){
-    resultado = resultado.filter(e => e.entrada.precio <= Number(precioMax)); 
-  }
-
-  if(texto){
-    const textoMinus = texto.toLowerCase();
-    resultado = resultado.filter(e =>
-      e.titulo.toLowerCase().includes(textoMinus) || e.descripcion.toLowerCase().includes(textoMinus)
-    );
-  }
-
-  if(etiqueta){
-    resultado = resultado.filter(e => e.etiquetas.includes(etiqueta)); 
-  }
-
-  if(desde){
-    resultado = resultado.filter(e => e.dia >= desde);
-  }
-
-  if(hasta){
-    resultado = resultado.filter(e => e.dia <= hasta);
-  }
-
-  if(organizador){
-    const orgMinus = organizador.toLowerCase();
-    resultado = resultado.filter(e => e.organizador.Nombre.toLowerCase().includes(orgMinus));
-  }
-
-  if(artista){
-    const artMinus = artista.toLowerCase();
-    resultado = resultado.filter(e => e.artistas.some(a => a.nombre.toLowerCase().includes(artMinus))); 
-  }
-  
-  if(cancelado !== undefined){
-    const estaCancelado = cancelado === "true";
-    resultado = resultado.filter(e => e.cancelado.estado === estaCancelado);
-  }
-
-  if(alquilerPendiente === "true"){
-    resultado = resultado.filter(e => e.alquiler.seCobra && !e.alquiler.pagado);
-  }
-
-  if (minCamareros) {
-    resultado = resultado.filter(e => e.camareros >= Number(minCamareros));
-  }
-
-  const total = resultado.length;
-
-  if (orden) {
-    const direccion = dir === 'desc' ? -1 : 1;
-    resultado = [...resultado].sort((a, b) => {
-      if (orden === 'fecha') {
-        if (a.dia === b.dia) return (a.hora.localeCompare(b.hora)) * direccion;
-        return (a.dia.localeCompare(b.dia)) * direccion;
-      }
-      if (a[orden] < b[orden]) return -1 * direccion;
-      if (a[orden] > b[orden]) return 1 * direccion;
-      return 0;
-    });
-  }
-
-  const inicio = (Number(pagina) - 1) * Number(limite);
-  const fin = inicio + Number(limite);
-  resultado = resultado.slice(inicio, fin);
-
-  if (campos) {
-    const camposArray = campos.split(',');
-    resultado = resultado.map(e => {
-      const proyectado = { id: e.id };
-      camposArray.forEach(campo => {
-        if (e[campo] !== undefined) proyectado[campo] = e[campo];
-      });
-      return proyectado;
-    });
-  }
-
-  res.json({
-    total,
-    pagina: Number(pagina),
-    limite: Number(limite),
-    datos: resultado
-  });
+// GET /api/eventos
+router.get('/', (req, res) => {
+  res.json(obtenerEventosService(req.query));
 });
 
+// GET /api/eventos/:id
 router.get('/:id', (req, res) => {
   const idNum = Number(req.params.id);
-  if (isNaN(idNum)) {
-    return res.status(400).json({ error: 'El ID debe ser un número entero' });
-  }
+  if (isNaN(idNum)) return res.status(400).json({ error: 'El ID debe ser un número entero' });
 
-  const eventoEncontrado = eventos.find(e => e.id === idNum);
-  if (!eventoEncontrado) {
-    return res.status(404).json({ error: 'Evento no encontrado' });
-  }
+  const evento = obtenerEventoPorIdService(idNum);
+  if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
 
-  res.json(calcularDatosEventos(eventoEncontrado));
+  res.json(evento);
+});
+
+// PATCH /api/eventos/:id/cancelar
+router.patch('/:id/cancelar', (req, res) => {
+  const idNum = Number(req.params.id);
+  if (isNaN(idNum)) return res.status(400).json({ error: 'ID no válido' });
+
+  const resultado = cancelarEventoService(idNum, req.body.motivo);
+  if (resultado.error) return res.status(resultado.status).json({ error: resultado.error });
+
+  res.json({ mensaje: "Evento cancelado con éxito", evento: resultado.evento });
+});
+
+// PATCH /api/eventos/:id/pagar-alquiler
+router.patch('/:id/pagar-alquiler', (req, res) => {
+  const idNum = Number(req.params.id);
+  if (isNaN(idNum)) return res.status(400).json({ error: 'ID no válido' });
+
+  const resultado = pagarAlquilerService(idNum);
+  if (resultado.error) return res.status(resultado.status).json({ error: resultado.error });
+
+  res.json({ mensaje: "Alquiler marcado como pagado", evento: resultado.evento });
 });
 
 module.exports = router;

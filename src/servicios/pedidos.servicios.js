@@ -16,7 +16,9 @@ const obtenerPedidosService = (pendiente) => {
 
 const obtenerPedidoPorIdService = (buscarId) => {
   const pedido = pedidos.find(p => p.id === buscarId);
-  if (!pedido) return null;
+  if (!pedido){
+    return null;
+  } 
 
   const lineasConNombre = pedido.lineas.map(linea => {
     const productoEncontrado = productos.find(prod => prod.id === linea.productoId);
@@ -34,7 +36,9 @@ const obtenerPedidoPorIdService = (buscarId) => {
 
 
 const validarLineasPedido = (lineas) => {
-  if (!Array.isArray(lineas) || lineas.length === 0) return false;
+  if (!Array.isArray(lineas) || lineas.length === 0){
+    return false;
+  }
 
   return !lineas.some(linea => {
     const productoEncontrado = productos.find(p => p.id === Number(linea.productoId));
@@ -70,7 +74,9 @@ const crearPedidoManualService = (lineas) => {
 const crearPedidoAutomaticoService = () => {
   const productoAenviar = productos.filter(p => p.stock <= p.minimo);
 
-  if (productoAenviar.length === 0) return null;
+  if (productoAenviar.length === 0){
+    return null;
+  }
 
   const lineasAutomaticas = productoAenviar.map(p => {
     const unidadesFaltantes = (p.minimo * 2) - p.stock;
@@ -104,8 +110,13 @@ const crearPedidoAutomaticoService = () => {
 
 const recibirPedidoService = (buscarId) => {
   const pedido = pedidos.find(p => p.id === buscarId);
-  if (!pedido) return { status: 404, error: "Pedido no encontrado" };
-  if (pedido.estado === "recibido") return { status: 409, error: "Pedido ya recibido anteriormente" };
+  if (!pedido){
+    return { status: 404, error: "Pedido no encontrado" };
+  }
+
+  if (pedido.estado === "recibido"){
+    return { status: 409, error: "Pedido ya recibido anteriormente" };
+  }
 
   pedido.estado = "recibido";
 
