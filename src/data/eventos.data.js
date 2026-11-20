@@ -51,8 +51,8 @@ const eventos = [{
     titulo: "Noche de Karaoke Loca",
     descripcion: "Sube al escenario y canta tus canciones favoritas",
     tipo: "karaoke",
-    dia: "2026-11-25",
-    hora: "20:30",
+    dia: "2026-11-26",
+    hora: "08:30",
     entrada: {gratis: true, precio: 0},
     gentePrevista: 60,
     organizador: {nombre: "Asociación Cultural", contacto: "676123980"},
@@ -105,7 +105,7 @@ const eventos = [{
     cancelado: {estado: false, motivo: null },
     artistas: [{nombre: "Comediante Novato", precio: 120, duracionMin: 50}],
     etiquetas: ["humor", "arte"],
-    celebrado: true
+    celebrado: false
   },
   { id: 8,
     titulo: "Concierto de Ed-Sheeran",
@@ -135,7 +135,7 @@ const eventos = [{
     cancelado: {estado: true, motivo: "Incidencia electrica en el sistema de luces"},
     artistas: [],
     etiquetas: ["fiesta", "disfraces"],
-    celebrado: true
+    celebrado: false
   },
   { id: 10,
     titulo: "Karaoke de Navidad",
